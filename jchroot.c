@@ -188,6 +188,24 @@ static int step5(struct config *config)
     free(template);
     return EXIT_FAILURE;
   }
+
+  /*force disable mount propagation, despite previous state*/
+  mount("none", "/proc", "none", MS_REC | MS_PRIVATE, NULL);
+
+  if (mount("proc", "/proc", "proc", MS_NOSUID | MS_NODEV | MS_NOEXEC, NULL) == -1)
+  {
+    fprintf(stderr, "unable to mount proc: %m\n");
+    return EXIT_FAILURE;
+  }
+
+  /*force disable mount propagation, despite previous state*/
+  mount("none", "/sys", "none", MS_SILENT, NULL);
+  if (mount("sysfs", "/sys", "sysfs", MS_SILENT, NULL) == -1)
+  {
+    fprintf(stderr, "unable to mount sys: %m\n");
+    return EXIT_FAILURE;
+  }
+  
   return step6(config);
 }
 
@@ -313,6 +331,17 @@ static int step3(void *arg)
         free(mntdata);
         return EXIT_FAILURE;
       }
+
+      if (umount2(path, MNT_DETACH) == -1)
+      {
+        if (errno != EINVAL)
+        {
+          fprintf(stderr, "unable to umount %s: %m\n",path);
+          free(mntdata);
+          return EXIT_FAILURE;
+        }
+      }
+
       if ((mount(mntent->mnt_fsname, path, mntent->mnt_type,
                  mntflags & ~MS_REMOUNT, mntdata)) ||
           /* With MS_BIND, we need to remount to enable some options like "ro" */
