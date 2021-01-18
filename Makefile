@@ -1,5 +1,5 @@
 CFLAGS=-Werror -Wall -ansi -g -O2
-LDFLAGS=
+LDFLAGS?=
 EXEC=jchroot
 
 all: $(EXEC)

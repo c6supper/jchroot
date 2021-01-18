@@ -189,23 +189,6 @@ static int step5(struct config *config)
     return EXIT_FAILURE;
   }
 
-  /*force disable mount propagation, despite previous state*/
-  mount("none", "/proc", "none", MS_REC | MS_PRIVATE, NULL);
-
-  if (mount("proc", "/proc", "proc", MS_NOSUID | MS_NODEV | MS_NOEXEC, NULL) == -1)
-  {
-    fprintf(stderr, "unable to mount proc: %m\n");
-    return EXIT_FAILURE;
-  }
-
-  /*force disable mount propagation, despite previous state*/
-  mount("none", "/sys", "none", MS_SILENT, NULL);
-  if (mount("sysfs", "/sys", "sysfs", MS_SILENT, NULL) == -1)
-  {
-    fprintf(stderr, "unable to mount sys: %m\n");
-    return EXIT_FAILURE;
-  }
-
   return step6(config);
 }
 
