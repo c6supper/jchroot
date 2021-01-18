@@ -205,7 +205,7 @@ static int step5(struct config *config)
     fprintf(stderr, "unable to mount sys: %m\n");
     return EXIT_FAILURE;
   }
-  
+
   return step6(config);
 }
 
@@ -332,12 +332,22 @@ static int step3(void *arg)
         return EXIT_FAILURE;
       }
 
-      if (umount2(path, MNT_DETACH) == -1)
+      /*if (umount2(path, MNT_DETACH) == -1)
       {
         if (errno != EINVAL)
         {
           fprintf(stderr, "unable to umount %s: %m\n",path);
           free(mntdata);
+          return EXIT_FAILURE;
+        }
+      }*/
+
+      if ((mntflags & MS_BIND) && !(mntflags & MS_RDONLY))
+      {
+        /*bind and RW ,should create jail directory in soruce original rootfs*/
+        if (0 != mkdir(mntent->mnt_fsname, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) && errno != EEXIST)
+        {
+          fprintf(stderr, "failed to create directory %s: %m\n", mntent->mnt_fsname);
           return EXIT_FAILURE;
         }
       }
